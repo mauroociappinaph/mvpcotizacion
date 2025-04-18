@@ -1,25 +1,7 @@
 import { create } from 'zustand';
 import { api } from '../services/api';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  image?: string;
-}
-
-interface AuthState {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  error: string | null;
-  isAuthenticated: boolean;
-
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: { name: string; email: string; password: string }) => Promise<void>;
-  logout: () => void;
-  checkAuthStatus: () => Promise<boolean>;
-}
+import { AuthState } from '../types/auth.types';
+import { RegisterRequest } from '../types/api.types';
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -52,7 +34,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  register: async (userData) => {
+  register: async (userData: RegisterRequest) => {
     set({ isLoading: true, error: null });
     try {
       const response = await api.register(userData);

@@ -1,4 +1,133 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Frontend de Turma
+
+Este es el frontend de la aplicación Turma, desarrollado con Next.js, TypeScript y React.
+
+## Estructura del Proyecto
+
+```
+frontend/
+├── app/
+│   ├── api/                   # API routes
+│   ├── auth/                  # Páginas de autenticación
+│   │   ├── login/             # Página de login
+│   │   └── register/          # Página de registro
+│   ├── components/            # Componentes reutilizables
+│   │   ├── auth/              # Componentes de autenticación
+│   │   └── layout/            # Componentes de layout
+│   ├── lib/                   # Bibliotecas y utilidades
+│   │   ├── services/          # Servicios para comunicación con API
+│   │   ├── store/             # Estados globales (Zustand)
+│   │   └── types/             # Interfaces TypeScript
+│   ├── projects/              # Páginas de proyectos
+│   ├── tasks/                 # Páginas de tareas
+│   └── page.tsx               # Página principal (Dashboard)
+├── public/                    # Archivos estáticos
+└── next.config.js             # Configuración de Next.js
+```
+
+## Tecnologías Principales
+
+- **Next.js**: Framework de React para aplicaciones web.
+- **TypeScript**: Superset tipado de JavaScript.
+- **Zustand**: Manejo de estado global.
+- **Tailwind CSS**: Framework CSS para estilos.
+- **httplazy**: Cliente HTTP para comunicación con la API.
+- **shadcn/ui**: Componentes UI.
+
+## Uso de httplazy
+
+Este proyecto utiliza `httplazy` como cliente HTTP para todas las comunicaciones con el backend. `httplazy` es una biblioteca ligera y fácil de usar para realizar peticiones HTTP.
+
+### Configuración
+
+La configuración de `httplazy` se encuentra en `app/lib/services/api.ts`:
+
+```typescript
+import { http } from "httplazy";
+
+// Configurar la URL base para las peticiones
+http.defaults.baseURL = BASE_URL;
+http.defaults.headers["Content-Type"] = "application/json";
+
+// Configurar interceptores para añadir el token de autenticación
+http.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+  }
+  return config;
+});
+
+// Interceptores para manejar errores de autenticación
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.status === 401) {
+      localStorage.removeItem("authToken");
+      window.location.href = "/auth/login";
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+### Ejemplo de uso
+
+```typescript
+// Obtener todos los proyectos
+const getProjects = async (): Promise<Project[]> => {
+  const response = await http.get<Project[]>("/api/projects");
+  return response.data;
+};
+
+// Crear un nuevo proyecto
+const createProject = async (projectData: ProjectData): Promise<Project> => {
+  const response = await http.post<Project>("/api/projects", projectData);
+  return response.data;
+};
+```
+
+## Estructura de tipos
+
+Todas las interfaces de TypeScript están definidas en archivos separados en el directorio `app/lib/types/`:
+
+- `api.types.ts`: Tipos para peticiones y respuestas de la API.
+- `auth.types.ts`: Tipos para autenticación y usuarios.
+- `project.types.ts`: Tipos para proyectos.
+- `task.types.ts`: Tipos para tareas.
+
+## Estados Globales
+
+Los estados globales se manejan con Zustand y están definidos en el directorio `app/lib/store/`:
+
+- `authStore.ts`: Estado de autenticación.
+- `projectStore.ts`: Estado de proyectos.
+- `taskStore.ts`: Estado de tareas.
+
+## Desarrollo
+
+Para iniciar el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+Para compilar el proyecto:
+
+```bash
+npm run build
+```
+
+Para iniciar el servidor en producción:
+
+```bash
+npm start
+```
 
 ## Getting Started
 

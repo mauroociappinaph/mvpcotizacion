@@ -1,36 +1,7 @@
 import { create } from 'zustand';
 import { api } from '../services/api';
-
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  startDate?: string;
-  endDate?: string;
-  status: string;
-  teamId: string;
-  createdAt: string;
-  updatedAt: string;
-  team?: {
-    id: string;
-    name: string;
-  };
-  _count?: {
-    tasks: number;
-  };
-}
-
-interface ProjectState {
-  projects: Project[];
-  currentProject: Project | null;
-  isLoading: boolean;
-  error: string | null;
-  fetchProjects: () => Promise<void>;
-  fetchProject: (id: string) => Promise<void>;
-  createProject: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateProject: (id: string, project: Partial<Project>) => Promise<void>;
-  deleteProject: (id: string) => Promise<void>;
-}
+import { Project, ProjectState } from '../types/project.types';
+import { ProjectData } from '../types/api.types';
 
 export const useProjectStore = create<ProjectState>((set) => ({
   projects: [],
@@ -66,10 +37,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
     }
   },
 
-  createProject: async (projectData) => {
+  createProject: async (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     set({ isLoading: true, error: null });
     try {
-      const newProject = await api.createProject(projectData);
+      const newProject = await api.createProject(projectData as ProjectData);
       set(state => ({
         projects: [...state.projects, newProject],
         isLoading: false
