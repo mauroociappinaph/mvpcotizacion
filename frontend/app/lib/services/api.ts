@@ -11,9 +11,17 @@ interface ProjectData {
   teamId: string;
 }
 
+// Función helper para obtener el token desde localStorage
+const getAuthToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('authToken');
+  }
+  return null;
+}
+
 async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
-  // In a real app, we would get the token from a storage or context
-  const token = localStorage.getItem('authToken');
+  // En una aplicación real, obtendríamos el token de un almacenamiento o contexto
+  const token = getAuthToken();
 
   const headers = {
     'Content-Type': 'application/json',
@@ -107,6 +115,19 @@ export const api = {
     return fetchWithAuth('/api/projects', {
       method: 'POST',
       body: JSON.stringify(projectData),
+    });
+  },
+
+  updateProject: async (id: string, projectData: Partial<ProjectData>) => {
+    return fetchWithAuth(`/api/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(projectData),
+    });
+  },
+
+  deleteProject: async (id: string) => {
+    return fetchWithAuth(`/api/projects/${id}`, {
+      method: 'DELETE',
     });
   },
 

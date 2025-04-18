@@ -1,6 +1,7 @@
 'use client';
 
 import MainLayout from '../components/layout/MainLayout';
+import ProtectedRoute from '../components/auth/ProtectedRoute';
 import { useState, useEffect } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { useTaskStore } from '../lib/store/taskStore';
@@ -18,28 +19,24 @@ export default function TasksPage() {
     task.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (isLoading) {
-    return (
-      <MainLayout>
+  const renderContent = () => {
+    if (isLoading) {
+      return (
         <div className="max-w-7xl mx-auto">
           <p className="text-center">Loading tasks...</p>
         </div>
-      </MainLayout>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <MainLayout>
+    if (error) {
+      return (
         <div className="max-w-7xl mx-auto">
           <p className="text-center text-red-500">Error: {error}</p>
         </div>
-      </MainLayout>
-    );
-  }
+      );
+    }
 
-  return (
-    <MainLayout>
+    return (
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-semibold text-gray-900">Tasks</h1>
@@ -108,6 +105,14 @@ export default function TasksPage() {
           )}
         </div>
       </div>
-    </MainLayout>
+    );
+  }
+
+  return (
+    <ProtectedRoute>
+      <MainLayout>
+        {renderContent()}
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

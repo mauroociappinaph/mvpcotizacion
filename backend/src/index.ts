@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import taskRoutes from './routes/taskRoutes';
+import authRoutes from './routes/authRoutes';
+import projectRoutes from './routes/projectRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -25,11 +27,11 @@ app.get('/', (req, res) => {
 });
 
 // Use route modules
+app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
-// app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/teams', teamRoutes);
-// app.use('/api/projects', projectRoutes);
 // app.use('/api/channels', channelRoutes);
 // app.use('/api/messages', messageRoutes);
 
