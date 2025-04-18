@@ -130,5 +130,6 @@ Frontend Development
 -	Usar docstrings claros en lugar de comentarios sueltos.
 
 - Antes de hacer los cambios en el codigo revisa los archivos MODELODENEGOCIOS.md y TAREAS.md
+- No repetir nombres en las carpetas o archivos.
 
 

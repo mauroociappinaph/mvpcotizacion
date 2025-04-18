@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ListTodo, MessageSquare, FolderOpen, Users, Settings } from 'lucide-react';
+import { Home, ListTodo, MessageSquare, FolderOpen, Users, Settings, FileText } from 'lucide-react';
 import clsx from 'clsx';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Tasks', href: '/tasks', icon: ListTodo },
   { name: 'Projects', href: '/projects', icon: FolderOpen },
+  { name: 'Quotations', href: '/quotations', icon: FileText },
   { name: 'Chat', href: '/chat', icon: MessageSquare },
   { name: 'Teams', href: '/teams', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },

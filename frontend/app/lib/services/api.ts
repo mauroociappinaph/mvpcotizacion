@@ -1,8 +1,10 @@
 import { RegisterRequest, AuthResponse, ProjectData, UserResponse } from '../types/api.types';
 import { Project } from '../types/project.types';
 import { Task } from '../types/task.types';
+import { Quotation, QuotationItem, Client, QuotationData, QuotationItemData, ClientData } from '../types/quotation.types';
 import { HttpConfig, HttpResponse, HttpError } from '../types/http.types';
 import { http } from 'httplazy';
+import axios, { AxiosError } from 'axios';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -36,6 +38,17 @@ http.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Helper function to handle API errors
+const handleApiError = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<{error?: string}>;
+    if (axiosError.response?.data?.error) {
+      return axiosError.response.data.error;
+    }
+  }
+  return 'An unexpected error occurred';
+};
 
 // API Services
 export const api = {
@@ -115,4 +128,148 @@ export const api = {
     const response = await http.get('/api/teams');
     return response.data;
   },
+
+  // Quotation endpoints
+  getQuotations: async (): Promise<Quotation[]> => {
+    try {
+      const response = await axios.get<{data?: Quotation[]}>('/api/quotations');
+      return response.data.data || [];
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  getQuotation: async (id: string): Promise<Quotation> => {
+    try {
+      const response = await axios.get<{data?: Quotation}>(`/api/quotations/${id}`);
+      if (!response.data.data) {
+        throw new Error('Quotation not found');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  createQuotation: async (data: QuotationData): Promise<Quotation> => {
+    try {
+      const response = await axios.post<{data?: Quotation}>('/api/quotations', data);
+      if (!response.data.data) {
+        throw new Error('Failed to create quotation');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  updateQuotation: async (id: string, data: Partial<QuotationData>): Promise<Quotation> => {
+    try {
+      const response = await axios.put<{data?: Quotation}>(`/api/quotations/${id}`, data);
+      if (!response.data.data) {
+        throw new Error('Failed to update quotation');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  deleteQuotation: async (id: string): Promise<boolean> => {
+    try {
+      const response = await axios.delete<{data?: boolean}>(`/api/quotations/${id}`);
+      return !!response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  // Quotation items endpoints
+  addQuotationItem: async (quotationId: string, data: QuotationItemData): Promise<QuotationItem> => {
+    try {
+      const response = await axios.post<{data?: QuotationItem}>(`/api/quotations/${quotationId}/items`, data);
+      if (!response.data.data) {
+        throw new Error('Failed to add quotation item');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  updateQuotationItem: async (quotationId: string, itemId: string, data: Partial<QuotationItemData>): Promise<QuotationItem> => {
+    try {
+      const response = await axios.put<{data?: QuotationItem}>(`/api/quotations/${quotationId}/items/${itemId}`, data);
+      if (!response.data.data) {
+        throw new Error('Failed to update quotation item');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  removeQuotationItem: async (quotationId: string, itemId: string): Promise<boolean> => {
+    try {
+      const response = await axios.delete<{data?: boolean}>(`/api/quotations/${quotationId}/items/${itemId}`);
+      return !!response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  // Client endpoints
+  getClients: async (): Promise<Client[]> => {
+    try {
+      const response = await axios.get<{data?: Client[]}>('/api/clients');
+      return response.data.data || [];
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  getClient: async (id: string): Promise<Client> => {
+    try {
+      const response = await axios.get<{data?: Client}>(`/api/clients/${id}`);
+      if (!response.data.data) {
+        throw new Error('Client not found');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  createClient: async (data: ClientData): Promise<Client> => {
+    try {
+      const response = await axios.post<{data?: Client}>('/api/clients', data);
+      if (!response.data.data) {
+        throw new Error('Failed to create client');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  updateClient: async (id: string, data: Partial<ClientData>): Promise<Client> => {
+    try {
+      const response = await axios.put<{data?: Client}>(`/api/clients/${id}`, data);
+      if (!response.data.data) {
+        throw new Error('Failed to update client');
+      }
+      return response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  deleteClient: async (id: string): Promise<boolean> => {
+    try {
+      const response = await axios.delete<{data?: boolean}>(`/api/clients/${id}`);
+      return !!response.data.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  }
 };

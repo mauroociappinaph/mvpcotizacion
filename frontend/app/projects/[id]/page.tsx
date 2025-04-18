@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useProjectStore } from "../../../lib/store/projectStore";
+import { useProjectStore } from "../../lib/store/projectStore";
 import {
   Button,
   Card,
@@ -11,15 +11,15 @@ import {
   CardTitle,
   Badge,
   Skeleton
-} from "../../../components/ui";
+} from "../../components/ui";
 import { CalendarIcon, Edit, Users, X } from "lucide-react";
 import { format } from "date-fns";
-import TaskList from "../../../components/projects/TaskList";
+import TaskList from "../../components/projects/TaskList";
 
 export default function ProjectDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id as string;
+  const id = params?.id as string;
 
   const { currentProject, fetchProject, error } = useProjectStore();
   const [isLoading, setIsLoading] = useState(true);
@@ -189,8 +189,8 @@ export default function ProjectDetailsPage() {
                   Timeline
                 </h3>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Start Date:</span> {formatDate(currentProject.startDate)}</p>
-                  <p><span className="font-medium">End Date:</span> {formatDate(currentProject.endDate)}</p>
+                  <p><span className="font-medium">Start Date:</span> {formatDate(currentProject.startDate || "")}</p>
+                  <p><span className="font-medium">End Date:</span> {formatDate(currentProject.endDate || "")}</p>
                 </div>
               </div>
 
