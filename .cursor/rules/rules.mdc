@@ -1,0 +1,134 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## "When creating project structure"
+
+- Separate the frontend and backend into distinct folders.
+- Frontend must use Next.js with TypeScript.
+- Backend must use Node.js with Express.
+- Use Prisma with SQLite for the database.
+- Use Zustand for global state management in the frontend.
+- Use TailwindCSS for styling.
+- Use `lazyHttp` for API calls in the frontend.
+- Use shadcn/ui for UI components.
+
+## "When designing authentication":
+- Use OAuth 2.0 for user authentication.
+- Store access tokens securely.
+- Backend handles all authentication logic.
+- Frontend must redirect based on auth state.
+
+## "When setting up messaging":
+- Use Socket.io for real-time communication (or Pusher).
+- Create private channels for projects and teams.
+- Store chat history in the database.
+
+## "When working on architecture":
+- Generate diagrams that show how the frontend, backend, and DB are connected.
+- Clearly define API routes for login, task management, messaging, etc.
+
+
+## "When developing the backend":
+- Group code by modules: auth, tasks, projects, teams, chat.
+- Use controller-service-repository pattern.
+- Validate all incoming data.
+- Handle errors with consistent response format.
+
+## "When working on task endpoints":
+- Implement endpoints to create, update, delete tasks.
+- Tasks can be assigned to users and have due dates.
+- Implement filtering by team or project.
+
+ ## "When working on team and project APIs":
+- Allow creating teams and assigning members.
+- Organize tasks by project.
+- Projects can be divided into phases.
+
+##  When working on notifications":
+- Implement push and real-time notifications.
+- Notify users of new tasks, messages, and project updates.
+
+## "When handling roles and permissions":
+- Define roles: admin, member, guest.
+- Apply middleware to protect routes based on role.
+
+Frontend Development
+## When working on the frontend
+- Use pages for: Dashboard, Chat, Tasks, Profile.
+- All pages must be responsive and mobile-friendly.
+- Use Zustand for state: tasks, user, projects, messages.
+- Connect to backend endpoints via services using lazyHttp.
+
+## "When developing UI":
+- Use shadcn components where possible.
+- Apply Tailwind for layout and responsive design.
+- Handle loading and error states in each component.
+
+"When handling notifications":
+- Display in-app notifications for messages and tasks.
+- Sync with backend real-time updates using Socket.io.
+
+
+## "When writing tests":
+- Write unit tests for services and critical logic.
+- Write integration tests to check frontend-backend communication.
+- Write UI tests to validate user flow and interactions.
+- Perform load testing on backend endpoints.
+
+
+## "When deploying":
+- Deploy backend to AWS.
+- Deploy frontend to Vercel.
+- Configure SSL and custom domain.
+
+## "When monitoring":
+- Integrate Sentry for frontend and backend.
+- Log key events in both systems.
+
+## "When documenting":
+- Write user onboarding docs.
+- Write API reference docs in Markdown.
+
+
+
+## 🧱Normas de Código
+
+- Máximo 200 líneas por archivo
+- Todo componente, módulo o lógica debe dividirse en partes pequeñas y reutilizables.
+- Modularización total
+- Separar lógica, estilos, hooks, tipos, servicios, etc.
+- Importaciones con alias: Configurar @ como base del src para rutas absolutas (por ejemplo, import Button from '@/components/ui/Button').
+- Organizar la estructura del proyecto por módulos funcionales (features/domains), no por tipo.
+- Toda función debe estar documentada con una breve descripción de lo que hace, los parámetros y el valor de retorno.
+- Prohibido usar <a href="/ruta"> directamente si es navegación interna usar Link de next.
+- Tests de integración mínima en flows clave (formulario, login, etc).
+- Ubicar tests junto al módulo: useChat.test.ts, TaskService.test.ts
+- Que las interfaces de typescript esten en un archivo separado llamado interface.type.ts
+	Nombrar con claridad: useAuthSession, usePagination.
+	•	Separar hooks de lógica de UI (useModal, useTasks).
+    🧱 Tipado y Tipos
+	•	✅ Usar Zod o TypeScript estrictamente
+	•	Validaciones de datos externas con Zod o Yup.
+	•	Evitar any, usar unknown con refinamiento si es necesario.
+
+## Seguridad
+- ✅ Nunca exponer secretos ni API Keys en el frontend
+- Usar .env.local, nunca subir a git.
+
+## Organización
+-  Naming consistente
+-	Componentes en PascalCase.
+-	Hooks en camelCase.
+-	Archivos por feature: taskService.ts, taskSlice.ts.
+
+## Código limpio
+-  ✅Sin código muerto
+-	Remover console.log, funciones no usadas o comentadas.
+-	✅ No usar comentarios innecesarios
+-	Usar docstrings claros en lugar de comentarios sueltos.
+
+- Antes de hacer los cambios en el codigo revisa los archivos MODELODENEGOCIOS.md y TAREAS.md
+
+

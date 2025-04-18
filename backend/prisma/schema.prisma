@@ -1,0 +1,178 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  password      String?
+  oauthProvider String?
+  oauthId       String?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  teams         TeamMember[]
+  assignedTasks Task[]         @relation("AssignedToUser")
+  createdTasks  Task[]         @relation("CreatedByUser")
+  sentMessages  Message[]      @relation("SentByUser")
+  notifications Notification[] @relation("UserNotifications")
+}
+
+// Team model
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members  TeamMember[]
+  projects Project[]
+  channels Channel[]
+}
+
+// TeamMember model (join table with role)
+model TeamMember {
+  id       String   @id @default(uuid())
+  role     String // admin, member, guest
+  joinedAt DateTime @default(now())
+
+  // Relations
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@unique([teamId, userId])
+}
+
+// Project model
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String // active, completed, on-hold
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  team   Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String
+  tasks  Task[]
+  phases ProjectPhase[]
+}
+
+// ProjectPhase model
+model ProjectPhase {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  order       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  tasks     Task[]
+}
+
+// Task model
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  priority    String // high, medium, low
+  status      String // todo, in-progress, completed, blocked
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId    String?
+  phase        ProjectPhase? @relation(fields: [phaseId], references: [id], onDelete: SetNull)
+  phaseId      String?
+  assignedTo   User?         @relation("AssignedToUser", fields: [assignedToId], references: [id], onDelete: SetNull)
+  assignedToId String?
+  createdBy    User          @relation("CreatedByUser", fields: [createdById], references: [id], onDelete: Cascade)
+  createdById  String
+  parentTask   Task?         @relation("SubTasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  parentTaskId String?
+  subTasks     Task[]        @relation("SubTasks")
+}
+
+// Channel model (for chat)
+model Channel {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  type        String // direct, group, project
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  team     Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId   String
+  messages Message[]
+}
+
+// Message model
+model Message {
+  id           String    @id @default(uuid())
+  content      String
+  isTemporary  Boolean   @default(false)
+  scheduledFor DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId String
+  sender    User    @relation("SentByUser", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId  String
+}
+
+// Notification model
+model Notification {
+  id        String   @id @default(uuid())
+  type      String // task_assigned, message_received, due_date_reminder, etc.
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user   User   @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+}
+
+// Document model
+model Document {
+  id        String   @id @default(uuid())
+  name      String
+  fileUrl   String
+  fileType  String
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Additional fields for version control could be added here
+}
