@@ -66,6 +66,11 @@ export const api = {
     return response.data;
   },
 
+  getTasksByProject: async (projectId: string): Promise<Task[]> => {
+    const response = await http.get<Task[]>(`/api/projects/${projectId}/tasks`);
+    return response.data;
+  },
+
   createTask: async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> => {
     const response = await http.post<Task>('/api/tasks', taskData);
     return response.data;
