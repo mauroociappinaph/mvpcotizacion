@@ -1,0 +1,58 @@
+/* Reset de estilos y configuración básica */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Estilos para Tailwind */
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+
+/* Variables globales */
+:root {
+  --primary-color: #3b82f6;
+  --secondary-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #3b82f6;
+  --success-color: #10b981;
+  --background-color: #f9fafb;
+  --foreground-color: #111827;
+  --border-color: #e5e7eb;
+}
+
+/* Estilos para el cuerpo de la aplicación */
+body {
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  min-height: 100vh;
+}
+
+/* Estilos para enlaces */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Eliminación de decoración para listas */
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

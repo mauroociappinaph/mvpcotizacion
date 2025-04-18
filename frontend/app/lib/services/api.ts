@@ -1,7 +1,7 @@
 import { RegisterRequest, AuthResponse, ProjectData, UserResponse } from '../types/api.types';
 import { Project } from '../types/project.types';
 import { Task } from '../types/task.types';
-import { Quotation, QuotationItem, Client, QuotationData, QuotationItemData, ClientData } from '../types/quotation.types';
+import { Quotation, QuotationItem, ClientInfo, QuotationData, QuotationItemData, ClientData } from '../types/quotation.types';
 import { HttpConfig, HttpResponse, HttpError } from '../types/http.types';
 import { http } from 'httplazy';
 import axios, { AxiosError } from 'axios';
@@ -219,18 +219,18 @@ export const api = {
   },
 
   // Client endpoints
-  getClients: async (): Promise<Client[]> => {
+  getClients: async (): Promise<ClientInfo[]> => {
     try {
-      const response = await axios.get<{data?: Client[]}>('/api/clients');
+      const response = await axios.get<{data?: ClientInfo[]}>('/api/clients');
       return response.data.data || [];
     } catch (error) {
       throw new Error(handleApiError(error));
     }
   },
 
-  getClient: async (id: string): Promise<Client> => {
+  getClient: async (id: string): Promise<ClientInfo> => {
     try {
-      const response = await axios.get<{data?: Client}>(`/api/clients/${id}`);
+      const response = await axios.get<{data?: ClientInfo}>(`/api/clients/${id}`);
       if (!response.data.data) {
         throw new Error('Client not found');
       }
@@ -240,9 +240,9 @@ export const api = {
     }
   },
 
-  createClient: async (data: ClientData): Promise<Client> => {
+  createClient: async (data: ClientData): Promise<ClientInfo> => {
     try {
-      const response = await axios.post<{data?: Client}>('/api/clients', data);
+      const response = await axios.post<{data?: ClientInfo}>('/api/clients', data);
       if (!response.data.data) {
         throw new Error('Failed to create client');
       }
@@ -252,9 +252,9 @@ export const api = {
     }
   },
 
-  updateClient: async (id: string, data: Partial<ClientData>): Promise<Client> => {
+  updateClient: async (id: string, data: Partial<ClientData>): Promise<ClientInfo> => {
     try {
-      const response = await axios.put<{data?: Client}>(`/api/clients/${id}`, data);
+      const response = await axios.put<{data?: ClientInfo}>(`/api/clients/${id}`, data);
       if (!response.data.data) {
         throw new Error('Failed to update client');
       }
