@@ -25,7 +25,9 @@
     "httplazy": "^1.6.7",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.6.0",
-    "typescript": "^5.8.3"
+    "socket.io": "^4.8.1",
+    "typescript": "^5.8.3",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

@@ -1,21 +1,19 @@
 import { create } from 'zustand';
-import { api } from '../services/api';
-import { Task, TaskState } from '../types/task.types';
+import { TaskData, TaskState } from '../types/task.types';
+import * as api from '../services/api';
 
-export const useTaskStore = create<TaskState>((set, get) => ({
+export const useTaskStore = create<TaskState>((set) => ({
   tasks: [],
   currentTask: null,
-  projectTasks: [],
   isLoading: false,
   error: null,
 
   fetchTasks: async () => {
-    set({ isLoading: true, error: null });
     try {
-      const tasks = await api.getTasks();
+      set({ isLoading: true, error: null });
+      const tasks = await api.api.getTasks();
       set({ tasks, isLoading: false });
     } catch (error) {
-      console.error('Error fetching tasks:', error);
       set({
         error: error instanceof Error ? error.message : 'Error al cargar las tareas',
         isLoading: false
@@ -23,112 +21,83 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
   },
 
-  fetchTask: async (id: string) => {
-    set({ isLoading: true, error: null });
+  getTask: async (id: string) => {
     try {
-      const task = await api.getTask(id);
+      set({ isLoading: true, error: null });
+      const task = await api.api.getTask(id);
       set({ currentTask: task, isLoading: false });
     } catch (error) {
-      console.error('Error fetching task:', error);
       set({
-        error: error instanceof Error ? error.message : 'Error al cargar la tarea',
+        error: error instanceof Error ? error.message : `Error al cargar la tarea ${id}`,
         isLoading: false
       });
     }
   },
 
-  fetchTasksByProject: async (projectId: string) => {
-    set({ isLoading: true, error: null });
+  getTasksByProject: async (projectId: string) => {
     try {
-      const tasks = await api.getTasksByProject(projectId);
-      set({ projectTasks: tasks, isLoading: false });
+      set({ isLoading: true, error: null });
+      const tasks = await api.api.getTasksByProject(projectId);
+      set({ tasks, isLoading: false });
     } catch (error) {
-      console.error('Error fetching project tasks:', error);
       set({
-        error: error instanceof Error ? error.message : 'Error al cargar las tareas del proyecto',
+        error: error instanceof Error ? error.message : `Error al cargar las tareas del proyecto ${projectId}`,
         isLoading: false
       });
     }
   },
 
-  createTask: async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    set({ isLoading: true, error: null });
+  createTask: async (data: TaskData) => {
     try {
-      const newTask = await api.createTask(taskData);
+      set({ isLoading: true, error: null });
+      const task = await api.api.createTask(data as Omit<Task, "id" | "createdAt" | "updatedAt">);
       set(state => ({
-        tasks: [...state.tasks, newTask],
-        projectTasks: taskData.projectId === state.projectTasks[0]?.projectId
-          ? [...state.projectTasks, newTask]
-          : state.projectTasks,
+        tasks: [...state.tasks, task],
         isLoading: false
       }));
-      return newTask;
     } catch (error) {
-      console.error('Error creating task:', error);
       set({
         error: error instanceof Error ? error.message : 'Error al crear la tarea',
         isLoading: false
       });
-      throw error;
     }
   },
 
-  updateTask: async (id: string, taskData: Partial<Task>) => {
-    set({ isLoading: true, error: null });
+  updateTask: async (id: string, data: Partial<TaskData>) => {
     try {
-      const updatedTask = await api.updateTask(id, taskData);
+      set({ isLoading: true, error: null });
+      const updatedTask = await api.api.updateTask(id, data);
+
       set(state => ({
-        tasks: state.tasks.map(task =>
-          task.id === id ? { ...task, ...updatedTask } : task
-        ),
-        projectTasks: state.projectTasks.map(task =>
-          task.id === id ? { ...task, ...updatedTask } : task
-        ),
-        currentTask: state.currentTask?.id === id
-          ? { ...state.currentTask, ...updatedTask }
-          : state.currentTask,
+        tasks: state.tasks.map(task => task.id === id ? updatedTask : task),
+        currentTask: state.currentTask?.id === id ? updatedTask : state.currentTask,
         isLoading: false
       }));
-      return updatedTask;
     } catch (error) {
-      console.error('Error updating task:', error);
       set({
-        error: error instanceof Error ? error.message : 'Error al actualizar la tarea',
+        error: error instanceof Error ? error.message : `Error al actualizar la tarea ${id}`,
         isLoading: false
       });
-      throw error;
     }
   },
 
   deleteTask: async (id: string) => {
-    set({ isLoading: true, error: null });
     try {
-      await api.deleteTask(id);
+      set({ isLoading: true, error: null });
+      await api.api.deleteTask(id);
+
       set(state => ({
         tasks: state.tasks.filter(task => task.id !== id),
-        projectTasks: state.projectTasks.filter(task => task.id !== id),
         currentTask: state.currentTask?.id === id ? null : state.currentTask,
         isLoading: false
       }));
     } catch (error) {
-      console.error('Error deleting task:', error);
       set({
-        error: error instanceof Error ? error.message : 'Error al eliminar la tarea',
+        error: error instanceof Error ? error.message : `Error al eliminar la tarea ${id}`,
         isLoading: false
       });
-      throw error;
     }
   },
 
-  updateTaskStatus: async (id: string, status: string) => {
-    return get().updateTask(id, { status });
-  },
-
-  assignTask: async (id: string, userId: string) => {
-    return get().updateTask(id, { assignedToId: userId });
-  },
-
-  clearProjectTasks: () => {
-    set({ projectTasks: [] });
-  }
+  clearError: () => set({ error: null })
 }));

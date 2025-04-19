@@ -1,147 +1,118 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
-import * as crypto from 'crypto';
-import * as jwt from 'jsonwebtoken';
+import * as authService from '../services/authService';
 
-// Helper function to hash passwords
-const hashPassword = (password: string): string => {
-  const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-  return `${salt}:${hash}`;
-};
-
-// Helper function to verify passwords
-const verifyPassword = (password: string, hashedPassword: string): boolean => {
-  const [salt, storedHash] = hashedPassword.split(':');
-  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-  return storedHash === hash;
-};
-
-// Register a new user
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const userData = req.body;
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'User with this email already exists' });
-    }
-
-    // Hash password
-    const hashedPassword = hashPassword(password);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        createdAt: true,
-      },
-    });
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    );
+    const result = await authService.registerUser(userData);
 
     res.status(201).json({
-      user,
-      token,
+      success: true,
+      data: result
     });
   } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ error: 'Failed to register user' });
+    if (error instanceof Error) {
+      if (error.message === 'User already exists') {
+        return res.status(400).json({
+          success: false,
+          error: error.message
+        });
+      }
+    }
+
+    console.error('Register error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al registrar usuario'
+    });
   }
 };
 
-// Login user
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const credentials = req.body;
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const result = await authService.loginUser(credentials);
 
-    if (!user || !user.password) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Verify password
-    const isPasswordValid = verifyPassword(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    );
-
-    // Return user data (excluding password)
-    const userData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      image: user.image,
-      createdAt: user.createdAt,
-    };
-
-    res.json({
-      user: userData,
-      token,
+    res.status(200).json({
+      success: true,
+      data: result
     });
   } catch (error) {
-    console.error('Error logging in:', error);
-    res.status(500).json({ error: 'Failed to login' });
+    if (error instanceof Error) {
+      if (error.message === 'Invalid credentials') {
+        return res.status(401).json({
+          success: false,
+          error: error.message
+        });
+      }
+    }
+
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al iniciar sesión'
+    });
   }
 };
 
-// Get current user profile
 export const getProfile = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore - We'll add req.user in the auth middleware
+    // El userId viene del middleware de autenticación
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({
+        success: false,
+        error: 'Usuario no autenticado'
+      });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        createdAt: true,
-      },
+    const user = await authService.getUserProfile(userId);
+
+    res.status(200).json({
+      success: true,
+      data: user
     });
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener perfil'
+    });
+  }
+};
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+// Método para autenticación con OAuth
+export const oauthCallback = async (req: Request, res: Response) => {
+  try {
+    const { provider, oauthId, email, name, image } = req.body;
+
+    if (!provider || !oauthId || !email || !name) {
+      return res.status(400).json({
+        success: false,
+        error: 'Datos insuficientes para la autenticación OAuth'
+      });
     }
 
-    res.json(user);
+    const result = await authService.authenticateWithOAuth(
+      provider,
+      oauthId,
+      email,
+      name,
+      image
+    );
+
+    res.status(200).json({
+      success: true,
+      data: result
+    });
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).json({ error: 'Failed to fetch profile' });
+    console.error('OAuth error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error en la autenticación OAuth'
+    });
   }
 };

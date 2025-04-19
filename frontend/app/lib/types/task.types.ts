@@ -1,48 +1,66 @@
-// Tipos para tareas
+/**
+ * Definición de tipos para tareas
+ */
 
+/**
+ * Estado de una tarea
+ */
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+
+/**
+ * Prioridad de una tarea
+ */
+export type TaskPriority = 'low' | 'medium' | 'high' | 'baja' | 'media' | 'alta';
+
+/**
+ * Modelo de una tarea
+ */
 export interface Task {
   id: string;
   title: string;
-  description?: string;
-  status: string;
-  priority: 'low' | 'medium' | 'high';
-  dueDate?: string;
-  assignedToId?: string;
-  assignedTo?: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string;
-  };
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string;
   projectId?: string;
-  project?: {
-    id: string;
-    name: string;
-  };
-  createdById: string;
-  createdBy?: {
-    id: string;
-    name: string;
-    email: string;
-    image?: string;
-  };
+  assignedTo?: string;
+  assignedToName?: string; // Nombre del usuario asignado (si está disponible)
+  teamId?: string;
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string;
 }
 
+/**
+ * Datos para crear una tarea
+ */
+export interface TaskData {
+  title: string;
+  description: string;
+  status?: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string;
+  projectId?: string;
+  assignedTo?: string;
+  teamId?: string;
+}
+
+/**
+ * Estado del store de tareas
+ */
 export interface TaskState {
   tasks: Task[];
   currentTask: Task | null;
-  projectTasks: Task[];
   isLoading: boolean;
   error: string | null;
+
+  // Acciones
   fetchTasks: () => Promise<void>;
-  fetchTask: (id: string) => Promise<void>;
-  fetchTasksByProject: (projectId: string) => Promise<void>;
-  createTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task>;
-  updateTask: (id: string, task: Partial<Task>) => Promise<Task>;
+  getTask: (id: string) => Promise<void>;
+  getTasksByProject: (projectId: string) => Promise<void>;
+  createTask: (data: TaskData) => Promise<void>;
+  updateTask: (id: string, data: Partial<TaskData>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
-  updateTaskStatus: (id: string, status: string) => Promise<Task>;
-  assignTask: (id: string, userId: string) => Promise<Task>;
-  clearProjectTasks: () => void;
+  clearError: () => void;
 }

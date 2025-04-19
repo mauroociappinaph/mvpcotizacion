@@ -26,21 +26,20 @@ import { CheckCircle2, MoreHorizontal, Plus } from 'lucide-react';
 import { format, isToday, isYesterday, isThisWeek } from 'date-fns';
 
 interface TaskListProps {
-  projectId: string;
   showAddTask?: boolean;
 }
 
-export default function TaskList({ projectId, showAddTask = true }: TaskListProps) {
-  const { projectTasks, fetchTasksByProject, isLoading, error, updateTaskStatus } = useTaskStore();
+export default function TaskList({ showAddTask = true }: TaskListProps) {
+    const { tasks, fetchTasks, isLoading, error, updateTask } = useTaskStore();
   const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
-    fetchTasksByProject(projectId);
-  }, [projectId, fetchTasksByProject]);
+    fetchTasks();
+  }, [fetchTasks]);
 
   const filteredTasks = activeTab === 'all'
-    ? projectTasks
-    : projectTasks.filter(task => task.status === activeTab);
+    ? tasks
+    : tasks.filter((task: Task) => task.status === activeTab);
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string, className: string }> = {
@@ -92,7 +91,7 @@ export default function TaskList({ projectId, showAddTask = true }: TaskListProp
 
   const handleStatusChangeFunc = async (taskId: string, newStatus: string) => {
     try {
-      await updateTaskStatus(taskId, newStatus);
+      await updateTask(taskId, { status: newStatus });
     } catch (error) {
       console.error('Error updating task status:', error);
     }
