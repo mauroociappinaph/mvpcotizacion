@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { TaskData, TaskState } from '../types/task.types';
 import * as api from '../services/api';
-
+import { Task } from '../types/task.types';
 export const useTaskStore = create<TaskState>((set) => ({
   tasks: [],
   currentTask: null,

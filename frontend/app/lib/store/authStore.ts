@@ -89,5 +89,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       return false;
     }
+  },
+
+  updateUserProfile: async (userData: { name: string; bio?: string; image?: string }) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatedUser = await api.updateProfile(userData);
+      set({
+        user: updatedUser,
+        isLoading: false
+      });
+      return updatedUser;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Error al actualizar perfil',
+        isLoading: false
+      });
+      throw error;
+    }
   }
 }));

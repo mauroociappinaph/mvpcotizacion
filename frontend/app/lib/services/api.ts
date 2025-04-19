@@ -2,274 +2,177 @@ import { RegisterRequest, AuthResponse, ProjectData, UserResponse } from '../typ
 import { Project } from '../types/project.types';
 import { Task } from '../types/task.types';
 import { Quotation, QuotationItem, ClientInfo, QuotationData, QuotationItemData, ClientData } from '../types/quotation.types';
-import { HttpConfig, HttpResponse, HttpError } from '../types/http.types';
-import { http } from 'httplazy';
-import axios, { AxiosError } from 'axios';
+import { http } from 'httplazy/client';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-// Configurar la URL base para las peticiones
-http.defaults.baseURL = BASE_URL;
-http.defaults.headers['Content-Type'] = 'application/json';
+// API base URL from environment variable or default to localhost
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// Configurar interceptores
-http.interceptors.request.use((config: HttpConfig) => {
-  // Añadir token de autenticación si existe
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      };
-    }
-  }
-  return config;
-});
 
-http.interceptors.response.use(
-  (response: HttpResponse<unknown>) => response,
-  (error: HttpError) => {
-    // Manejar error de autenticación
-    if (error.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('authToken');
-      window.location.href = '/auth/login';
-    }
-    return Promise.reject(error);
-  }
-);
 
-// Helper function to handle API errors
-const handleApiError = (error: unknown): string => {
-  if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError<{error?: string}>;
-    if (axiosError.response?.data?.error) {
-      return axiosError.response.data.error;
-    }
-  }
-  return 'An unexpected error occurred';
-};
+
 
 // API Services
 export const api = {
   // Auth endpoints
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    const response = await http.post<AuthResponse>('/api/auth/login', { email, password });
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+      throw new Error('Login failed');
+    }
+
+    return response.json();
   },
 
   register: async (userData: RegisterRequest): Promise<AuthResponse> => {
-    const response = await http.post<AuthResponse>('/api/auth/register', userData);
+    const response = await http.post<AuthResponse>('/auth/register', userData);
     return response.data;
   },
 
   getProfile: async (): Promise<UserResponse> => {
-    const response = await http.get<UserResponse>('/api/auth/profile');
+    const response = await http.get<UserResponse>('/auth/profile');
+    return response.data;
+  },
+
+  updateProfile: async (userData: { name: string; bio?: string; image?: string }) => {
+    const response = await http.put<UserResponse>('/auth/profile', userData);
     return response.data;
   },
 
   // Task endpoints
   getTasks: async (): Promise<Task[]> => {
-    const response = await http.get<Task[]>('/api/tasks');
+    const response = await http.get<Task[]>('/tasks');
     return response.data;
   },
 
   getTask: async (id: string): Promise<Task> => {
-    const response = await http.get<Task>(`/api/tasks/${id}`);
+    const response = await http.get<Task>(`/tasks/${id}`);
     return response.data;
   },
 
   getTasksByProject: async (projectId: string): Promise<Task[]> => {
-    const response = await http.get<Task[]>(`/api/projects/${projectId}/tasks`);
+    const response = await http.get<Task[]>(`/projects/${projectId}/tasks`);
     return response.data;
   },
 
   createTask: async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> => {
-    const response = await http.post<Task>('/api/tasks', taskData);
+    const response = await http.post<Task>('/tasks', taskData);
     return response.data;
   },
 
   updateTask: async (id: string, taskData: Partial<Task>): Promise<Task> => {
-    const response = await http.put<Task>(`/api/tasks/${id}`, taskData);
+    const response = await http.put<Task>(`/tasks/${id}`, taskData);
     return response.data;
   },
 
   deleteTask: async (id: string): Promise<void> => {
-    await http.delete(`/api/tasks/${id}`);
+    await http.delete(`/tasks/${id}`);
   },
 
   // Project endpoints
   getProjects: async (): Promise<Project[]> => {
-    const response = await http.get<Project[]>('/api/projects');
+    const response = await http.get<Project[]>('/projects');
     return response.data;
   },
 
   getProject: async (id: string): Promise<Project> => {
-    const response = await http.get<Project>(`/api/projects/${id}`);
+    const response = await http.get<Project>(`/projects/${id}`);
     return response.data;
   },
 
   createProject: async (projectData: ProjectData): Promise<Project> => {
-    const response = await http.post<Project>('/api/projects', projectData);
+    const response = await http.post<Project>('/projects', projectData);
     return response.data;
   },
 
   updateProject: async (id: string, projectData: Partial<ProjectData>): Promise<Project> => {
-    const response = await http.put<Project>(`/api/projects/${id}`, projectData);
+    const response = await http.put<Project>(`/projects/${id}`, projectData);
     return response.data;
   },
 
   deleteProject: async (id: string): Promise<void> => {
-    await http.delete(`/api/projects/${id}`);
+    await http.delete(`/projects/${id}`);
   },
 
   // Team endpoints
   getTeams: async () => {
-    const response = await http.get('/api/teams');
+    const response = await http.get('/teams');
     return response.data;
   },
 
   // Quotation endpoints
-  getQuotations: async (): Promise<Quotation[]> => {
-    try {
-      const response = await axios.get<{data?: Quotation[]}>('/api/quotations');
-      return response.data.data || [];
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+  getQuotations: async ( ): Promise<Quotation[]> => {
+    const response = await http.get<Quotation>('/quotations');
+    return response.data;
   },
 
   getQuotation: async (id: string): Promise<Quotation> => {
-    try {
-      const response = await axios.get<{data?: Quotation}>(`/api/quotations/${id}`);
-      if (!response.data.data) {
-        throw new Error('Quotation not found');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.get<Quotation>(`/quotations/${id}`);
+    return response.data;
   },
 
   createQuotation: async (data: QuotationData): Promise<Quotation> => {
-    try {
-      const response = await axios.post<{data?: Quotation}>('/api/quotations', data);
-      if (!response.data.data) {
-        throw new Error('Failed to create quotation');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.post<Quotation>('/quotations', data);
+    return response.data;
   },
 
   updateQuotation: async (id: string, data: Partial<QuotationData>): Promise<Quotation> => {
-    try {
-      const response = await axios.put<{data?: Quotation}>(`/api/quotations/${id}`, data);
-      if (!response.data.data) {
-        throw new Error('Failed to update quotation');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.put<Quotation>(`/quotations/${id}`, data);
+    return response.data;
   },
 
   deleteQuotation: async (id: string): Promise<boolean> => {
-    try {
-      const response = await axios.delete<{data?: boolean}>(`/api/quotations/${id}`);
+    const response = await http.delete<{data?: boolean}>(`/quotations/${id}`);
       return !!response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
   },
 
   // Quotation items endpoints
   addQuotationItem: async (quotationId: string, data: QuotationItemData): Promise<QuotationItem> => {
-    try {
-      const response = await axios.post<{data?: QuotationItem}>(`/api/quotations/${quotationId}/items`, data);
-      if (!response.data.data) {
-        throw new Error('Failed to add quotation item');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.post<{data?: QuotationItem}>(`/quotations/${quotationId}/items`, data);
+    return response.data.data;
   },
 
   updateQuotationItem: async (quotationId: string, itemId: string, data: Partial<QuotationItemData>): Promise<QuotationItem> => {
-    try {
-      const response = await axios.put<{data?: QuotationItem}>(`/api/quotations/${quotationId}/items/${itemId}`, data);
-      if (!response.data.data) {
-        throw new Error('Failed to update quotation item');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.put<{data?: QuotationItem}>(`/quotations/${quotationId}/items/${itemId}`, data);
+    return response.data.data;
   },
 
   removeQuotationItem: async (quotationId: string, itemId: string): Promise<boolean> => {
-    try {
-      const response = await axios.delete<{data?: boolean}>(`/api/quotations/${quotationId}/items/${itemId}`);
-      return !!response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.delete<{data?: boolean}>(`/quotations/${quotationId}/items/${itemId}`);
+    return !!response.data.data;
   },
 
   // Client endpoints
   getClients: async (): Promise<ClientInfo[]> => {
-    try {
-      const response = await axios.get<{data?: ClientInfo[]}>('/api/clients');
-      return response.data.data || [];
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.get<{data?: ClientInfo[]}>('/clients');
+    return response.data.data || [];
   },
 
   getClient: async (id: string): Promise<ClientInfo> => {
-    try {
-      const response = await axios.get<{data?: ClientInfo}>(`/api/clients/${id}`);
-      if (!response.data.data) {
-        throw new Error('Client not found');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.get<{data?: ClientInfo}>(`/clients/${id}`);
+    return response.data.data;
   },
 
   createClient: async (data: ClientData): Promise<ClientInfo> => {
-    try {
-      const response = await axios.post<{data?: ClientInfo}>('/api/clients', data);
-      if (!response.data.data) {
-        throw new Error('Failed to create client');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    const response = await http.post<{data?: ClientInfo}>('/clients', data);
+    return response.data.data;
   },
 
-  updateClient: async (id: string, data: Partial<ClientData>): Promise<ClientInfo> => {
-    try {
-      const response = await axios.put<{data?: ClientInfo}>(`/api/clients/${id}`, data);
-      if (!response.data.data) {
-        throw new Error('Failed to update client');
-      }
-      return response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
+    updateClient: async (id: string, data: Partial<ClientData>): Promise<ClientInfo> => {
+    const response = await http.put<{data?: ClientInfo}>(`/clients/${id}`, data);
+    return response.data.data;
   },
 
   deleteClient: async (id: string): Promise<boolean> => {
-    try {
-      const response = await axios.delete<{data?: boolean}>(`/api/clients/${id}`);
-      return !!response.data.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
-  }
+    const response = await http.delete<{data?: boolean}>(`/clients/${id}`);
+    return !!response.data.data;
+  },
+
+
+
 };

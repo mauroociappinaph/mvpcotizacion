@@ -35,7 +35,7 @@ export default function TaskCard({ task, onStatusChange, onEdit, onDelete }: Tas
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd MMM yyyy', { locale: es });
-    } catch (e) {
+    } catch {
       return 'Fecha inválida';
     }
   };
@@ -43,7 +43,7 @@ export default function TaskCard({ task, onStatusChange, onEdit, onDelete }: Tas
   const isOverdue = (dueDate: string) => {
     try {
       return new Date(dueDate) < new Date() && task.status !== 'completed';
-    } catch (e) {
+    } catch {
       return false;
     }
   };

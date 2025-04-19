@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import KanbanBoard from '../components/tasks/KanbanBoard';
 import TaskForm from '../components/tasks/TaskForm';
 
 export default function KanbanPage() {
-  const router = useRouter();
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 

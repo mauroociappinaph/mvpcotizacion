@@ -210,7 +210,7 @@ export default function ProjectDetailsPage() {
         </CardContent>
       </Card>
 
-      <TaskList projectId={id} />
+      <TaskList />
     </div>
   );
 }

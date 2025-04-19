@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '../../../components/auth/ProtectedRoute';
 import { useAuthStore } from '../../../lib/store/authStore';
@@ -41,38 +41,35 @@ describe('ProtectedRoute', () => {
       checkAuthStatus: jest.fn(),
     });
 
-    render(
+    const { getByText, queryByText } = render(
       <ProtectedRoute>
         <div>Protected Content</div>
       </ProtectedRoute>
     );
 
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
-    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    expect(getByText('Loading...')).toBeInTheDocument();
+    expect(queryByText('Protected Content')).not.toBeInTheDocument();
   });
 
-  it('redirects to login if user is not authenticated', async () => {
+  it('redirects to login if user is not authenticated', () => {
     ((useAuthStore as unknown) as jest.Mock).mockReturnValue({
       isAuthenticated: false,
       isLoading: false,
       checkAuthStatus: jest.fn(),
     });
 
-    render(
+    const { queryByText } = render(
       <ProtectedRoute>
         <div>Protected Content</div>
       </ProtectedRoute>
     );
 
-    // Wait for authentication check
-    await screen.findByText('Loading...');
-
     // Should redirect to login
     expect(mockPush).toHaveBeenCalledWith('/login');
-    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+    expect(queryByText('Protected Content')).not.toBeInTheDocument();
   });
 
-  it('renders children if user is authenticated', async () => {
+  it('renders children if user is authenticated', () => {
     // Mock authenticated user
     ((useAuthStore as unknown) as jest.Mock).mockReturnValue({
       isAuthenticated: true,
@@ -80,17 +77,14 @@ describe('ProtectedRoute', () => {
       checkAuthStatus: jest.fn().mockResolvedValue(true),
     });
 
-    render(
+    const { getByText } = render(
       <ProtectedRoute>
         <div>Protected Content</div>
       </ProtectedRoute>
     );
 
-    // Wait for authentication check to complete
-    await screen.findByText('Protected Content');
-
     // Should render protected content
-    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    expect(getByText('Protected Content')).toBeInTheDocument();
     expect(mockPush).not.toHaveBeenCalled();
   });
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTaskStore } from '../../lib/store/taskStore';
-import { Task } from '../../lib/types/task.types';
+import { Task, TaskStatus    } from '../../lib/types/task.types';
 import {
   Card,
   CardContent,
@@ -91,7 +91,7 @@ export default function TaskList({ showAddTask = true }: TaskListProps) {
 
   const handleStatusChangeFunc = async (taskId: string, newStatus: string) => {
     try {
-      await updateTask(taskId, { status: newStatus });
+      await updateTask(taskId, { status: newStatus as TaskStatus });
     } catch (error) {
       console.error('Error updating task status:', error);
     }
@@ -149,10 +149,10 @@ export default function TaskList({ showAddTask = true }: TaskListProps) {
             {task.assignedTo && (
               <Avatar className="h-8 w-8 mr-2">
                 <AvatarImage
-                  src={task.assignedTo.image || ''}
-                  alt={task.assignedTo.name}
+                      src={''}
+                  alt={task.assignedTo}
                 />
-                <AvatarFallback>{getInitialsFunc(task.assignedTo.name)}</AvatarFallback>
+                <AvatarFallback>{getInitialsFunc(task.assignedTo)}</AvatarFallback>
               </Avatar>
             )}
             <DropdownMenu>

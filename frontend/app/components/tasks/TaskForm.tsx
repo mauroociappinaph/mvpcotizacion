@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTaskStore } from '../../lib/store/taskStore';
 import { useProjectStore } from '../../lib/store/projectStore';
-import { TaskData, TaskPriority, TaskStatus } from '../../lib/types/task.types';
+import { TaskData } from '../../lib/types/task.types';
 
 interface TaskFormProps {
   taskId?: string | null;
@@ -66,7 +66,7 @@ export default function TaskForm({ taskId, onClose }: TaskFormProps) {
       }
       onClose();
     } catch (err) {
-      // El error ya se maneja en el store
+      console.error('Error al crear/actualizar la tarea:', err);
     }
   };
 

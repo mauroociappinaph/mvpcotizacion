@@ -13,7 +13,7 @@ interface KanbanBoardProps {
 }
 
 export default function KanbanBoard({ projectId, onAddTask, onEditTask }: KanbanBoardProps) {
-  const { tasks, loading, error, updateTask, deleteTask, fetchTasks, getTasksByProject } = useTaskStore();
+  const { tasks, isLoading, error, updateTask, deleteTask, fetchTasks, getTasksByProject } = useTaskStore();
   const [groupedTasks, setGroupedTasks] = useState<Record<string, Task[]>>({
     pending: [],
     in_progress: [],
@@ -54,7 +54,7 @@ export default function KanbanBoard({ projectId, onAddTask, onEditTask }: Kanban
 
   const handleStatusChange = async (taskId: string, newStatus: string) => {
     try {
-      await updateTask(taskId, { status: newStatus });
+      await updateTask(taskId, { status: newStatus as TaskStatus });
     } catch (error) {
       console.error('Error al actualizar el estado de la tarea:', error);
     }
@@ -83,7 +83,7 @@ export default function KanbanBoard({ projectId, onAddTask, onEditTask }: Kanban
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
